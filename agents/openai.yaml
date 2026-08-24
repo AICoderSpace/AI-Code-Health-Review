@@ -1,0 +1,7 @@
+interface:
+  display_name: "AI Code Health Review"
+  short_description: "Evidence-first code, artifact, and supply-chain review"
+  default_prompt: "Use $ai-code-health-review to review this codebase, diff, report, or release artifact for correctness, security, artifact and supply-chain risk, test quality, and safe refactoring."
+
+policy:
+  allow_implicit_invocation: true

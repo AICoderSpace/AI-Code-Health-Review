@@ -1,0 +1,61 @@
+{
+  "$schema": {
+    "version": "synthetic-1.0",
+    "description": "Synthetic weighted code-health report"
+  },
+  "projectPath": "/synthetic/project",
+  "overallScore": 72.5,
+  "summary": {
+    "totalFiles": 3,
+    "analyzedFiles": 2,
+    "skippedFiles": 1,
+    "analysisTime": 25
+  },
+  "aggregatedMetrics": [
+    {
+      "name": "cyclomatic_complexity",
+      "category": "complexity",
+      "average": 62,
+      "min": 40,
+      "max": 84,
+      "median": 62
+    }
+  ],
+  "files": [
+    {
+      "path": "src/risky.py",
+      "score": 45,
+      "metrics": [
+        {
+          "name": "cyclomatic_complexity",
+          "category": "complexity",
+          "value": 18,
+          "normalizedScore": 40,
+          "severity": "error",
+          "details": "Several branches interact"
+        }
+      ],
+      "parseResult": {
+        "language": "python",
+        "totalLines": 120,
+        "codeLines": 95,
+        "commentLines": 10,
+        "functionCount": 4,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "src/steady.py",
+      "score": 100,
+      "metrics": [],
+      "parseResult": {
+        "language": "python",
+        "totalLines": 12,
+        "codeLines": 8,
+        "commentLines": 2,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    }
+  ]
+}

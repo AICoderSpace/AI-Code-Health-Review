@@ -1,0 +1,8 @@
+.DS_Store
+__MACOSX/
+Archive.zip
+*.zip
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
