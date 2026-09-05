@@ -1,6 +1,6 @@
 # Report Templates
 
-Use findings-first output and the smallest template that fits the reviewed scope.
+Use these templates when a structured report helps or the user requests one. Follow the user's output format; retain the evidence needed to assess each finding without forcing it into separate fields. Omit empty sections.
 
 ## Contents
 
@@ -16,7 +16,7 @@ Use findings-first output and the smallest template that fits the reviewed scope
 
 ## Finding Fields
 
-Use these fields for important findings:
+Include this information for important findings, either in concise prose or as fields:
 
 ```md
 1. [Severity] Category — title
@@ -43,31 +43,14 @@ Add only applicable context:
 ## Minimal Review
 
 ```md
-## Findings
+1. [Severity] Category: title (status; confidence).
+   At <location>, <inspected evidence> causes <impact> under <conditions>.
+   Fix: <smallest useful change>. Verify: <observable check>.
 
-1. [Severity] Category — title
-   - Status:
-   - Confidence:
-   - Location:
-   - Evidence:
-   - Impact:
-   - Fix:
-   - Verification:
-
-## Scope
-
-Reviewed:
-- ...
-
-Not reviewed:
-- ...
-
-## Residual Risk
-
-- ...
+Reviewed <scope>. Checks: <actual results or not run>. Remaining uncertainty: <material limits>.
 ```
 
-When there are no findings, say: "No significant issues found in the reviewed scope." Then list scope, uninspected areas, verification not run, and residual risk.
+When there are no findings, say: "No significant issues found in the reviewed scope." Follow with the scope and material verification limits; do not create empty finding or remediation sections.
 
 ## PR Review
 

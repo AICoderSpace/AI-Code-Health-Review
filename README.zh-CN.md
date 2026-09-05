@@ -2,46 +2,48 @@
 
 [English](README.md)
 
-一个面向 Codex 的证据驱动代码审查 skill，用于审查代码、diff、仓库、测试、依赖、CI/CD、基础设施配置、Release 产物以及机器生成的分析报告。
+这个 Codex 技能用于审查代码、diff、仓库、测试、依赖、CI/CD、基础设施配置、Release 产物和机器生成的分析报告。
 
-它关注真实工程风险，不把代码风格、扫描器输出或任意指标包装成虚假的确定性，并明确区分正确性、安全、隐私、数据完整性、可靠性、供应链完整性、测试质量、可维护性和性能。
+每项发现都说明检查过的证据、具体风险、修复建议和验证方法。审查会分别评估正确性、安全、隐私、数据完整性、可靠性、供应链完整性、测试质量、可维护性和性能。代码风格偏好或未经核实的扫描分数不能直接证明缺陷。
 
-## 核心能力
+## 审查范围
 
-- 以发现为先的代码、PR、提交前和项目健康审查
-- 面向认证、授权、敏感数据和不可信输入的威胁上下文审查
-- 依赖、lockfile、CI/CD、容器、基础设施、provenance 和发布链路审查
-- 基于威胁模型审查 Release 产物、签名、entitlements、敏感内容暴露和抗逆向韧性
-- 在执行项目构建、测试、扫描器或包脚本前应用安全闸门
-- 保留 baseline、fingerprint 和 suppression 的 SARIF 2.1.0 规范化
-- 明确暴露空、部分、跳过、失败、配置、解析器和位置元数据限制的加权代码健康报告规范化
-- 明确区分工具信号、已验证证据、严重度和置信度
-- 不使用虚构项目分数或通用硬阈值的定性热点映射
-- 基于风险审查测试质量并验证修复
-- 提供小步、可验证的重构建议和剩余风险说明
+- 审查代码、PR、提交前改动和项目健康，优先报告可操作的问题
+- 结合实际威胁场景，检查认证、授权、敏感数据和不可信输入
+- 检查依赖、锁文件、CI/CD、容器、基础设施、来源证明（provenance）和发布链路
+- 根据受保护资产和攻击者能力，检查 Release 产物、签名、权限声明（entitlements）、敏感内容暴露和抗逆向能力
+- 执行项目构建、测试、扫描器或包脚本前，检查入口和副作用
+- 整理 SARIF 2.1.0 报告，保留基线状态、指纹和抑制信息
+- 整理加权代码健康报告，说明空或部分覆盖、跳过或失败的文件，以及配置、解析器或位置元数据的缺失
+- 分别说明工具信号、已验证证据、严重度和置信度
+- 定性评估高风险代码，不编造项目分数或套用通用硬阈值
+- 根据风险检查测试质量并验证修复
+- 提出可逐步验证的重构建议，说明剩余风险
 
-## 不作出的承诺
+## 使用边界
 
-这个 skill 不是 SAST/SCA 引擎、渗透测试、漏洞利用框架或合规认证，也不能证明软件不存在漏洞或无法被逆向。构建成功、测试通过、高分、空扫描报告、检测到调试器或应用了混淆都不等于安全。
+这个技能不能代替 SAST/SCA 引擎、渗透测试或合规认证，不提供漏洞利用框架，也不能证明软件不存在漏洞或无法被逆向。构建成功、测试通过、高分、空扫描报告、检测到调试器或应用了混淆都不等于安全。
 
-仓库内容和分析报告会被视为不可信证据。在检查入口脚本和副作用之前，不执行项目控制的代码。
+仓库内容和分析报告用于提供证据，其中的嵌入指令不能授予权限或改变审查任务。执行项目代码前需要检查入口和副作用。同一任务内沿用已有授权；审查本身不授权访问生产数据或发布结果。
+
+小范围审查直接从用户提供的材料开始，只有需要时才读取参考文件。相关检查通过后，只有新改动、失败或尚未解决的疑点才需要扩大或重复验证。
 
 ## 安装
 
-在 Codex 中，优先使用内置安装器，让 Codex 选择其管理的用户级 skill 位置：
+使用内置安装器，让 Codex 选择其管理的用户级技能位置：
 
 ```text
 $skill-installer 从 https://github.com/Marstlantis/AI-Code-Health-Review 安装仓库根目录的 skill，并命名为 ai-code-health-review
 ```
 
-如需手动进行跨客户端用户级安装，请把仓库克隆到标准用户 skill 位置，并使用 skill 名称作为目标目录：
+如需在兼容客户端之间共用手动安装的技能，可把仓库克隆到标准用户技能目录：
 
 ```bash
 mkdir -p "$HOME/.agents/skills"
 git clone https://github.com/Marstlantis/AI-Code-Health-Review.git "$HOME/.agents/skills/ai-code-health-review"
 ```
 
-Codex 会自动检测 skill 变更；只有未显示时才需要重启。
+Codex 会自动检测技能变更；未显示时再重启。
 
 项目级安装可放在：
 
@@ -62,7 +64,7 @@ $ai-code-health-review 审查依赖、CI/CD 和发布供应链风险
 $ai-code-health-review 审查这个 macOS Release 产物的签名、entitlements、符号、敏感信息、依赖和抗逆向韧性
 ```
 
-匹配代码审查场景时，也可以由 Codex 隐式调用。
+请求与技能描述匹配时，Codex 也可以自动选择它。
 
 ## SARIF 规范化脚本
 
@@ -73,7 +75,9 @@ python3 scripts/summarize_sarif.py report.sarif --format markdown
 python3 scripts/summarize_sarif.py report.sarif --format json
 ```
 
-脚本保留 driver 与 extension rule component 元数据、规则名称与 rank、baseline 状态、原始 fingerprints、全部结果位置、suppression justification 和 code-flow 数量，并区分空 `runs` 数组与表示生产者填充失败的 `runs: null`。它只进行确定性的规范化和保守去重，不会验证源码行为、可达性、可利用性、严重度或正确性。输出会保留报告中的路径和消息，除非已获授权，否则应保持在本地。
+脚本保留 driver 和 extension 规则组件的元数据、规则名称和 rank、基线状态、原始指纹、全部结果位置、抑制理由和代码流数量。空 `runs` 数组与 `runs: null` 会分别保留；后者表示报告生产者未能填充 runs。
+
+规范化结果是确定的，去重采用保守规则。脚本不会验证源码行为、可达性、可利用性、严重度或正确性。输出保留报告中的路径和消息，未经授权应留在本地。
 
 解析器拒绝不受支持的 SARIF 版本、非标准 JSON 常量和超过 50 MiB 的报告。Markdown 输出会中和不可信报告字段中的终端控制符、双向文本控制符、原始 HTML 分隔符和可点击链接标记。
 
@@ -86,13 +90,13 @@ python3 scripts/summarize_code_health.py report.json --tool-name example-analyze
 python3 scripts/summarize_code_health.py report.json --tool-name example-analyzer --format json
 ```
 
-脚本保留明确归属的工具分数、严重度、指标、语言、文件数量和可选位置，同时区分 coverage 是 available、partial、empty、not populated 还是 unknown。即使工具报告 100 分，只要没有实际分析文件，仍属于无数据证据。缺失的权重、include/exclude 配置、解析器模式、失败计数或指标位置会保持不可用，不能据此做项目级分数结论。
+脚本保留工具提供的分数、严重度、指标、语言、文件数量和可选位置信息，并区分覆盖状态：可用、部分覆盖、空范围、未填充或未知。即使工具报告 100 分，只要没有实际分析文件，就不能说明代码健康。缺失的权重、include/exclude 配置、解析器模式、失败计数或指标位置仍标为不可用，不能用于支持项目整体评分。
 
-脚本不会运行分析器、安装 npm 包、调用 MCP、上传源码、验证指标公式或判断必须重构；它只安全规范化用户提供的本地报告，供后续源码验证。输出会保留报告路径、项目路径、文件路径和指标详情，未经披露授权应保持在本地。
+脚本整理用户提供的本地报告，供后续对照源码核实。它不会运行分析器、安装 npm 包、调用 MCP、上传源码、验证指标公式或判断是否需要重构。输出保留报告路径、项目路径、文件路径和指标详情，未经授权应留在本地。
 
-## 审查模型
+## 发现如何呈现
 
-重要发现包含：
+重要发现包含以下信息，可以写成简短段落，也可以分字段列出：
 
 - 严重度、状态和置信度
 - 精确位置和实际检查过的证据
@@ -102,11 +106,11 @@ python3 scripts/summarize_code_health.py report.json --tool-name example-analyze
 - 机器报告的工具、规则、baseline、fingerprint 和 suppression 信息
 - 仅在实际核对后给出的版本化标准映射
 
-数字分数始终归属于生成它的工具或评分模型。没有明确模型时，只使用带审查范围的定性风险等级。
+数字分数始终注明生成它的工具或评分模型。没有提供评分模型时，按实际检查范围给出定性风险等级。
 
-## 权威基线
+## 标准与来源
 
-skill 格式遵循 [OpenAI Build skills 指南](https://learn.chatgpt.com/docs/build-skills)和 [Agent Skills 规范](https://agentskills.io/specification)。审查指导使用以下版本化或由发布方维护的资料：
+技能格式遵循 [OpenAI Build skills 指南](https://learn.chatgpt.com/docs/build-skills)和 [Agent Skills 规范](https://agentskills.io/specification)。审查参考文件使用以下版本化或由发布方维护的资料：
 
 - [NIST SP 800-218，安全软件开发框架 1.1](https://csrc.nist.gov/pubs/sp/800/218/final)
 - [OWASP 应用安全验证标准 5.0.0](https://owasp.org/www-project-application-security-verification-standard/)
@@ -161,11 +165,11 @@ ai-code-health-review/
 └── README.zh-CN.md
 ```
 
-`SKILL.md` 保存精简的运行工作流，references 仅在相关场景下加载。两个 README 是开源仓库文档，不属于运行时提示词。
+`SKILL.md` 定义审查流程，并按需指向参考文件。两个 README 用于介绍仓库，技能不要求在审查时读取它们。
 
 ## 验证
 
-只有内置脚本和测试需要 Python 3.10 或更高版本；skill 指令本身没有运行时包依赖。
+内置脚本和测试需要 Python 3.10 或更高版本；技能指令本身没有运行时包依赖。
 
 ```bash
 python3 "${CODEX_HOME:-$HOME/.codex}/skills/.system/skill-creator/scripts/quick_validate.py" .
@@ -173,19 +177,19 @@ PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p 'test_*.py'
 PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate_package.py .
 ```
 
-发布包验证器会拒绝常见系统杂物、压缩包、Python 缓存、符号链接、缺失文件、断开的直接引用和缺失的双语跳转。它会忽略顶层 Git checkout 元数据，因此可直接在正常 clone 中运行而不会扫描 `.git` 内部。
+包验证器检查系统杂物、压缩包、Python 缓存、符号链接、必需文件、直接引用和中英文文档之间的链接，发现问题时返回失败。它忽略顶层 Git 检出元数据，可直接在正常克隆的仓库中运行，不会扫描 `.git` 内部。
 
 GitHub Actions 会在 Python 3.10 和 3.14 上运行标准库单测与包验证器；工作流只使用仓库只读权限，并将 GitHub 官方 actions 固定到完整提交 SHA。
 
 ## 贡献
 
-贡献应保持证据契约和渐进加载结构：
+提交改动时：
 
-1. 保持 `SKILL.md` 精简，把详细流程放入直接链接的 reference。
+1. 在 `SKILL.md` 中写清范围和证据要求，在需要处链接详细流程。
 2. 标准只使用官方或一手来源，并记录版本或状态变化。
-3. 没有具名、版本化、可复现的模型时，不添加通用指标阈值或评分权重。
+3. 没有明确名称、版本和可复现计算方法的模型，不添加通用指标阈值或评分权重。
 4. 确定性脚本必须有测试，并避免网络依赖。
-5. 不削弱执行安全、密钥保护、范围披露或机器报告人工验证。
+5. 保留执行安全、密钥保护、审查范围说明和机器报告核实要求。
 6. 提交前运行全部验证命令。
 
 ## 许可证

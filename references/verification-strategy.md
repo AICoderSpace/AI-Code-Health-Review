@@ -2,6 +2,14 @@
 
 Use this reference to judge existing tests and to select verification for a finding or fix. Apply `execution-safety.md` before running project-controlled commands.
 
+## Select and Stop
+
+Choose checks that can confirm the identified failure, protect affected contracts, or meet the project's requirements. A review of one function does not automatically need the full suite; a shared contract or high-risk change may justify it.
+
+Once the relevant checks pass, broaden or repeat them only for new changes, failures, or unresolved concerns. Do not add tests that merely restate a reversible, low-impact edit. Verify UI and runtime claims at the corresponding layer; compilation and static inspection cannot establish live behavior.
+
+Keep results scoped to the actual fixture and environment. Use isolated synthetic data, with no production history, metadata, credentials, or uncontrolled network dependency.
+
 ## Review the Tests, Not Just Their Presence
 
 Ask:

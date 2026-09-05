@@ -1,6 +1,6 @@
 # Execution Safety
 
-Apply this gate before running any project-controlled code, build, test, linter, scanner, benchmark, binary, container, package manager, migration, or networked tool.
+Apply this check before project-controlled code, builds, tests, linters, scanners, benchmarks, binaries, containers, package managers, or migrations, and before actions whose side effects or disclosure are unclear. Known read-only inspection and authorized text edits do not need a separate gate.
 
 ## Classify the Action
 
@@ -10,7 +10,13 @@ Apply this gate before running any project-controlled code, build, test, linter,
 - **External disclosure**: cloud scanner, telemetry, artifact/report upload, remote API, paste service.
 - **Destructive or production-affecting action**: data changes, deployment, credential use, external messages, irreversible commands.
 
-Read-only inspection is the default. The other classes require inspection, appropriate authorization, and bounded execution.
+Read-only inspection is the default. Other actions require understood side effects, authorization that covers the action, and bounded execution.
+
+## Use Existing Authorization
+
+The safety check is an assessment, not an automatic request for permission. Use authorization already supplied for the current task; do not ask again for the same scope. A local edit or test does not authorize publishing, external disclosure, production access, or other unrelated state changes.
+
+If an action needs additional permission, identify its exact target and side effects, explain why existing authorization is insufficient, and prepare the authorized work before asking. Continue independent work while the action is blocked. If this reference is the reason for stopping, cite the specific requirement instead of invoking an unspecified safety gate.
 
 ## Inspect Before Running
 
@@ -26,10 +32,13 @@ Read the relevant entry points without executing them:
 
 Never assume a familiar command such as `npm test`, `make test`, or `pytest` is safe merely because of its name.
 
+Reuse inspection from the current task while the relevant code, command, configuration, permissions, and data boundary remain unchanged. Reassess changed entry points and newly encountered side effects; do not reread unrelated configuration before each invocation.
+
 ## Safe Defaults
 
 - Use the sandbox and least privilege available.
 - Do not provide credentials, tokens, production configuration, signing keys, or personal data unless explicitly required and authorized.
+- Use isolated synthetic stores, preferences, temporary paths, and other fixtures for verification. Authorization to review a project does not grant access to production data, real user history, or associated metadata and derivatives. Treat data of unknown origin as sensitive until its use is authorized.
 - Keep network access disabled unless the task requires it and authorization permits it.
 - Do not upload source, reports, symbols, or artifacts to third parties without explicit authorization.
 - Do not install or update dependencies merely to make a review more complete. Explain the need and side effects first.
@@ -58,7 +67,7 @@ Treat scanner output as unverified evidence. Record tool version, rules/profile,
 
 ## Execution Record
 
-For every non-read-only check, report:
+For executed checks, report the following when material. Group commands that share a target and environment, and omit irrelevant or empty fields:
 
 - Command or meaningful equivalent
 - Working directory and target/revision

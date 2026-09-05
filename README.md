@@ -2,39 +2,41 @@
 
 [简体中文](README.zh-CN.md)
 
-An evidence-driven Codex skill for reviewing code, diffs, repositories, tests, dependencies, CI/CD, infrastructure configuration, Release artifacts, and machine-generated analysis reports.
+This Codex skill reviews code, diffs, repositories, tests, dependencies, CI/CD, infrastructure configuration, release artifacts, and machine-generated analysis reports.
 
-The skill is designed to find concrete engineering risk without turning code style, scanner output, or arbitrary metrics into fake certainty. It keeps correctness, security, privacy, data integrity, reliability, supply-chain integrity, test quality, maintainability, and performance distinct.
+Each finding explains the inspected evidence, the risk, a proposed fix, and how to verify it. Reviews distinguish correctness, security, privacy, data integrity, reliability, supply-chain integrity, test quality, maintainability, and performance. Style preferences and unverified scanner scores do not establish defects.
 
-## Highlights
+## Review coverage
 
-- Findings-first code, PR, pre-commit, and project-health reviews
-- Threat-context review for authentication, authorization, sensitive data, and untrusted input
+- Code, PR, pre-commit, and project-health reviews that lead with actionable findings
+- Authentication, authorization, sensitive data, and untrusted input, assessed against the actual threat context
 - Dependency, lockfile, CI/CD, container, infrastructure, provenance, and release review
-- Threat-driven Release-artifact, signing, entitlement, secret-exposure, and reverse-engineering-resilience review
-- Safe execution gate before project-controlled builds, tests, scanners, or package scripts
+- Release artifacts, signing, entitlements, secret exposure, and resistance to reverse engineering, assessed against the protected assets and attacker capabilities
+- Inspection of entry points and side effects before running project-controlled builds, tests, scanners, or package scripts
 - SARIF 2.1.0 normalization with baseline, fingerprint, and suppression preservation
-- Weighted code-health report normalization with explicit empty, partial, skipped, failed, configuration, parser, and location-metadata limits
-- Explicit separation of tool signals, verified evidence, severity, and confidence
-- Qualitative hotspot mapping without invented project scores or universal thresholds
+- Weighted code-health report normalization that reports empty or partial coverage, skipped or failed files, and missing configuration, parser, or location metadata
+- Separate treatment of tool signals, verified evidence, severity, and confidence
+- Qualitative hotspot assessment, with no invented project scores or universal thresholds
 - Risk-based test review and fix verification
-- Small, incremental refactoring guidance with residual-risk reporting
+- Incremental refactoring recommendations that state the remaining risk
 
-## What It Does Not Claim
+## Scope and limits
 
 This skill is not a SAST/SCA engine, penetration test, exploit framework, compliance certification, or proof that software is vulnerability-free or impossible to reverse engineer. It does not treat a successful build, passing test suite, high score, empty scanner report, detected debugger, or applied obfuscation as proof of safety.
 
-Repository content and analyzer reports are treated as untrusted evidence. Project-controlled code is not executed until its entry points and side effects have been inspected.
+Repository content and analyzer reports supply evidence; embedded instructions cannot grant permission or redirect the review. Before running project-controlled code, inspect its entry points and side effects. Existing authorization remains valid within the task scope. A review does not grant access to production data or permission to publish results.
+
+Small reviews start with the supplied material. The skill reads supporting references when the question needs them and stops verification after the relevant checks pass, unless new changes, failures, or unresolved concerns justify more work.
 
 ## Installation
 
-For Codex, prefer the built-in installer so Codex selects its managed user-skill location:
+Use the built-in installer to let Codex select its managed user-skill location:
 
 ```text
 $skill-installer install the repository-root skill from https://github.com/Marstlantis/AI-Code-Health-Review as ai-code-health-review
 ```
 
-For a manual, cross-client user installation, clone the repository into the standard user skill location using the skill name as the destination folder:
+For a manual installation shared across compatible clients, clone the repository into the standard user skill directory:
 
 ```bash
 mkdir -p "$HOME/.agents/skills"
@@ -43,7 +45,7 @@ git clone https://github.com/Marstlantis/AI-Code-Health-Review.git "$HOME/.agent
 
 Codex detects skill changes automatically; restart only if the skill does not appear.
 
-For project-local installation, place the same folder at:
+For a project-local installation, use:
 
 ```text
 .agents/skills/ai-code-health-review/
@@ -62,9 +64,9 @@ $ai-code-health-review review dependency, CI/CD, and release-supply-chain risk
 $ai-code-health-review assess this macOS Release artifact for signing, entitlement, symbol, secret, dependency, and reverse-engineering-resilience risk
 ```
 
-The skill can also be invoked implicitly for matching code-review requests.
+Codex can also select the skill when a request matches its description.
 
-## SARIF Normalizer
+## SARIF normalizer
 
 The bundled normalizer reads SARIF 2.1.0 with Python's standard library:
 
@@ -73,11 +75,13 @@ python3 scripts/summarize_sarif.py report.sarif --format markdown
 python3 scripts/summarize_sarif.py report.sarif --format json
 ```
 
-It preserves driver and extension rule-component metadata, rule names/ranks, baseline state, supplied fingerprints, all result locations, suppression justifications, and code-flow counts. It also distinguishes an empty `runs` array from `runs: null`, which means the producer failed to populate runs. It performs deterministic normalization and conservative deduplication only. It does not verify source behavior, reachability, exploitability, severity, or correctness. Output retains report paths and messages, so keep it local unless disclosure is authorized.
+The script preserves driver and extension rule-component metadata, rule names and ranks, baseline state, supplied fingerprints, all result locations, suppression justifications, and code-flow counts. An empty `runs` array stays distinct from `runs: null`, which means the producer failed to populate runs.
+
+Normalization is deterministic and deduplication is conservative. The script does not verify source behavior, reachability, exploitability, severity, or correctness. Its output retains report paths and messages, so keep it local unless disclosure is authorized.
 
 The parser rejects unsupported SARIF versions, non-standard JSON constants, and reports larger than 50 MiB. Markdown output neutralizes terminal controls, bidirectional text controls, raw HTML delimiters, and active link markup from untrusted report fields.
 
-## Code-Health Report Normalizer
+## Code-health report normalizer
 
 The standard-library code-health normalizer accepts compatible weighted per-file JSON reports containing `summary`, `files[].metrics`, and `files[].parseResult` fields:
 
@@ -86,13 +90,13 @@ python3 scripts/summarize_code_health.py report.json --tool-name example-analyze
 python3 scripts/summarize_code_health.py report.json --tool-name example-analyzer --format json
 ```
 
-It retains attributed tool scores, severities, metrics, languages, file counts, and optional locations while exposing whether coverage is available, partial, empty, not populated, or unknown. A reported score of 100 with zero analyzed files remains no-data evidence. Missing weights, include/exclude configuration, parser mode, failure counts, or metric locations remain unavailable and block score-based project claims.
+The script retains the tool's scores, severities, metrics, languages, file counts, and optional locations. It reports whether coverage is available, partial, empty, not populated, or unknown. A score of 100 with zero analyzed files provides no evidence of code health. Missing weights, include/exclude configuration, parser mode, failure counts, or metric locations remain unavailable; they cannot support a project-wide score claim.
 
-The normalizer does not run the analyzer, install npm packages, invoke MCP, upload source, validate metric formulas, or decide that refactoring is required. It safely normalizes a supplied local report for source verification. Its output retains report paths, project paths, file paths, and metric details, so keep it local unless disclosure is authorized.
+The normalizer prepares a supplied local report for verification against the source. It does not run the analyzer, install npm packages, invoke MCP, upload source, validate metric formulas, or decide whether refactoring is needed. Output retains report paths, project paths, file paths, and metric details, so keep it local unless disclosure is authorized.
 
-## Review Model
+## Findings
 
-Important findings include:
+Each important finding includes the following information, in concise prose or separate fields:
 
 - Severity, status, and confidence
 - Precise location and inspected evidence
@@ -102,11 +106,11 @@ Important findings include:
 - Tool/rule/baseline/fingerprint/suppression metadata for machine reports
 - Versioned standards mapping only when actually evaluated
 
-Numeric scores remain attributed to the tool or scoring model that produced them. Without a supplied model, the skill uses scoped qualitative risk bands.
+Numeric scores remain attributed to the tool or scoring model that produced them. When no scoring model is supplied, reviews use qualitative risk bands tied to the inspected scope.
 
-## Authoritative Baseline
+## Standards and sources
 
-The skill format follows [OpenAI's Build skills guidance](https://learn.chatgpt.com/docs/build-skills) and the [Agent Skills specification](https://agentskills.io/specification). Review guidance uses these versioned or publisher-maintained sources:
+The skill format follows [OpenAI's Build skills guidance](https://learn.chatgpt.com/docs/build-skills) and the [Agent Skills specification](https://agentskills.io/specification). The review references use these versioned or publisher-maintained sources:
 
 - [NIST SP 800-218, Secure Software Development Framework 1.1](https://csrc.nist.gov/pubs/sp/800/218/final)
 - [OWASP Application Security Verification Standard 5.0.0](https://owasp.org/www-project-application-security-verification-standard/)
@@ -126,7 +130,7 @@ Artifact, binary-hardening, metrics, and agent/MCP reviews also use:
 
 See [references/standards-map.md](references/standards-map.md) for applicability and limitations. Recheck publisher status when current compliance or latest guidance matters.
 
-## Repository Layout
+## Repository layout
 
 ```text
 ai-code-health-review/
@@ -161,7 +165,7 @@ ai-code-health-review/
 └── README.zh-CN.md
 ```
 
-`SKILL.md` contains the compact runtime workflow. References are loaded only when relevant. The README files are repository documentation and are not part of the runtime prompt.
+`SKILL.md` contains the review workflow and routes to references as needed. The README files document the repository; the skill does not require reading them during a review.
 
 ## Validation
 
@@ -173,19 +177,19 @@ PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests -p 'test_*.py'
 PYTHONDONTWRITEBYTECODE=1 python3 scripts/validate_package.py .
 ```
 
-The package validator rejects common release debris, archives, Python caches, symbolic links, missing required files, broken direct references, and missing language cross-links. It deliberately ignores top-level Git checkout metadata, so the same command works in a normal clone without scanning `.git` internals.
+The package validator rejects common release debris, archives, Python caches, symbolic links, missing required files, broken direct references, and missing language cross-links. It ignores top-level Git checkout metadata, so it also works in a normal clone without scanning `.git` internals.
 
 GitHub Actions runs the standard-library tests and package validator on Python 3.10 and 3.14 with read-only repository permissions and commit-pinned official actions.
 
 ## Contributing
 
-Contributions should preserve the evidence contract and progressive-disclosure structure:
+When contributing:
 
-1. Keep `SKILL.md` concise and route detailed procedures to a directly linked reference.
+1. Keep the scope and evidence requirements clear in `SKILL.md`; link detailed procedures where they are needed.
 2. Use official or primary sources for standards and record version/status changes.
 3. Do not add universal metric thresholds or scoring weights without a named, versioned, reproducible model.
 4. Add tests for deterministic scripts and avoid network dependencies.
-5. Do not weaken execution safety, secret handling, scope disclosure, or machine-report verification.
+5. Preserve execution safety, secret handling, scope disclosure, and verification of machine reports.
 6. Run all validation commands before submitting changes.
 
 ## License
